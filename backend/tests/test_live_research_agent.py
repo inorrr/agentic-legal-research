@@ -126,7 +126,7 @@ def test_live_read_cannot_switch_case_or_scope_after_search():
 def test_repeat_discovery_uses_seen_and_current_candidates_not_negative_votes():
     feedback = {'cl-adverse':{'relevance':'not_relevant', 'reason':'Synthetic factual distinction'}}
     result, source, client = run([call('search_cases', {'query':'first query'}),
-                                 call('search_cases', {'query':'refined query'}), read(), final()],
+                                 read(), call('search_cases', {'query':'refined query'}), final()],
                                 feedback=feedback, seen={'cl-prior'})
     assert source.calls[0][1]['excluded_ids'] == {'cl-prior'}
     assert source.calls[1][1]['excluded_ids'] == {'cl-prior', 'cl-101'}
@@ -283,7 +283,7 @@ def test_missing_opinion_text_is_case_level_and_another_case_can_succeed():
     missing = json.loads(client.requests[2]['input'][-1]['output'])
     assert missing['text_status'] == 'unavailable'
     assert missing['evidence'] == []
-    assert client.requests[2]['tool_choice'] == 'auto'
+    assert client.requests[2]['tool_choice'] == {'type':'function', 'name':'read_case'}
     assert any(action['tool'] == 'source_text_unavailable' for action in result['actions'])
     assert 'synthetic-secret' not in json.dumps(result)
 
@@ -325,7 +325,7 @@ def test_pagination_rate_warning_allows_cached_reads_and_marks_final_partial():
     assert result['error']['category'] == 'rate_limited'
     assert result['error']['retry_after_seconds'] == 45
     assert source.reads == ['cl-101']
-    assert client.requests[1]['tool_choice'] == 'auto'
+    assert client.requests[1]['tool_choice'] == {'type':'function', 'name':'read_case'}
     assert result['metrics']['source_api_requests'] == 1
     assert result['metrics']['source_cache_hits'] == 1
     discovery = json.loads(client.requests[1]['input'][-1]['output'])['discovery']
@@ -347,3 +347,114 @@ def test_pagination_scan_limit_without_provider_error_is_still_disclosed():
     assert result['status'] == 'partial'
     assert result['error']['category'] == 'pagination_limit'
     assert 'untrusted arbitrary content' not in json.dumps(result)
+
+
+def test_repeated_metadata_searches_cannot_spend_the_opinion_budget():
+    # Replay the recording failure: the model tries four query variations before
+    # reading. Even responses ignoring forced tool choice cannot spend that budget.
+    source = LiveSource()
+    source.request_budget = 4
+    result, source, client = run([
+        call('search_cases', {'query':f'query variation {number}'}) for number in range(4)
+    ] + [read(), final()], source=source)
+    assert result['status'] == 'completed'
+    assert len(source.calls) == 1
+    assert source.reads == ['cl-101']
+    assert result['metrics']['source_api_requests'] == 2
+    assert len(result['results']) == 1
+    assert len([action for action in result['actions'] if action['tool'] == 'budget_guard']) == 3
+    assert all(request['tool_choice'] == {'type':'function', 'name':'read_case'}
+               for request in client.requests[1:5])
+
+
+def test_normal_round_reserves_three_reads_and_finalizes_without_budget_error():
+    source = LiveSource([{**CASE, 'id':'cl-202'}, {**CASE, 'id':'cl-303'}])
+    source.request_budget = 4
+    result, source, client = run([call('search_cases', {'query':'passenger purse'}),
+                                 read(), read('cl-202'), read('cl-303'), final()], source=source)
+    assert result['status'] == 'completed'
+    assert 'error' not in result
+    assert len(source.calls) == 1
+    assert source.reads == ['cl-101', 'cl-202', 'cl-303']
+    assert result['metrics']['source_api_requests'] == 4
+    assert all(request['tool_choice'] == {'type':'function', 'name':'read_case'}
+               for request in client.requests[1:4])
+    assert client.requests[-1]['tool_choice'] == 'none'
+
+
+def test_last_request_read_can_finalize_with_fewer_than_three_cases():
+    source = LiveSource([{**CASE, 'id':'cl-202'}])
+    source.request_budget = 2
+    result, source, client = run([call('search_cases', {'query':'passenger purse'}), read(),
+                                 call('search_cases', {'query':'ignored stop request'}), final()], source=source)
+    assert result['status'] == 'completed'
+    assert 'error' not in result
+    assert result['metrics']['source_api_requests'] == 2
+    assert len(source.calls) == 1
+    assert client.requests[2]['tool_choice'] == 'none'
+    assert client.requests[3]['tool_choice'] == 'none'
+
+
+def test_empty_discovery_can_still_refine_its_query():
+    class EmptyFirst(LiveSource):
+        def search(self, query, **kwargs):
+            records = super().search(query, **kwargs)
+            return [] if len(self.calls) == 1 else records
+
+    source = EmptyFirst()
+    source.request_budget = 4
+    result, source, client = run([call('search_cases', {'query':'no matches'}),
+                                 call('search_cases', {'query':'better keywords'}), read(), final()], source=source)
+    assert result['status'] == 'completed'
+    assert len(source.calls) == 2
+    assert client.requests[1]['tool_choice'] == 'auto'
+    assert client.requests[2]['tool_choice'] == {'type':'function', 'name':'read_case'}
+
+
+def test_cached_unread_opinion_remains_eligible_at_zero_source_requests():
+    class CachedSecond(LiveSource):
+        request_budget = 2
+
+        def get_case(self, case_id):
+            case = super().get_case(case_id)
+            if case_id == 'cl-202':
+                self.metrics['api_requests'] -= 1
+                self.metrics['cache_hits'] += 1
+            return case
+
+    source = CachedSecond([{**CASE, 'id':'cl-202', 'text_availability':'cached'}])
+    result, source, client = run([call('search_cases', {'query':'passenger purse'}), read(),
+                                 read('cl-202'), final(case_id='cl-202', evidence='cl-202:o201:s3:e1')], source=source)
+    assert result['status'] == 'completed'
+    assert source.reads == ['cl-101', 'cl-202']
+    assert result['metrics']['source_api_requests'] == 2
+    assert result['metrics']['source_cache_hits'] == 1
+    assert client.requests[2]['tool_choice'] == {'type':'function', 'name':'read_case'}
+    assert client.requests[-1]['tool_choice'] == 'none'
+
+
+def test_multiple_searches_in_one_response_cannot_bypass_read_priority():
+    first = call('search_cases', {'query':'first query'})
+    first['output'] += call('search_cases', {'query':'another query'})['output']
+    result, source, _ = run([first, read(), final()])
+    assert result['status'] == 'completed'
+    assert len(source.calls) == 1
+    assert source.reads == ['cl-101']
+    assert any(action['tool'] == 'budget_guard' for action in result['actions'])
+
+
+def test_multiple_calls_cannot_continue_retrieval_after_source_failure():
+    class Limited(LiveSource):
+        def search(self, query, **kwargs):
+            if self.calls:
+                raise SourceError('rate_limited', 30)
+            return super().search(query, **kwargs)
+
+    batch = call('search_cases', {'query':'second query hits provider limit'})
+    batch['output'] += read()['output']
+    result, source, _ = run([call('search_cases', {'query':'first query'}), read(), batch, final()], source=Limited())
+    assert result['status'] == 'partial'
+    assert result['error']['category'] == 'rate_limited'
+    assert len(result['results']) == 1
+    assert source.reads == ['cl-101']
+    assert any(action['tool'] == 'budget_guard' for action in result['actions'])

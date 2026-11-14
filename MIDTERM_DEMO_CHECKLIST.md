@@ -2,6 +2,8 @@
 
 The requested deliverables are a short video and a working repository. This is a proposed readiness checklist, not the official course rubric. Confirm deadlines, length, format, access, and whether local execution suffices.
 
+**Demo 1 — work in progress:** [Watch the first demo](https://youtu.be/doyNzaxG2VA). The product is still incomplete and under active development. The user supplied this video on 2026-11-14; the recording has not been independently reviewed against the checklist, and course submission is not confirmed.
+
 ## Current readiness (2026-11-13)
 
 Live CourtListener discovery, a model-assisted feedback round, and a third source-search round passed on a public passenger-belongings scenario. Source excerpts, CSV, request idempotency, and restart persistence were checked; 157 backend and 7 frontend tests pass, and the production UI builds. Product scope is broader U.S. case search; the demo topic is Fourth Amendment vehicle/container searches. **Not submission-ready yet:** browser demonstration, video, and repository delivery remain open. The user confirms a reviewer is available; the walkthrough, legal-quality assessment, and broader evaluation remain planned follow-up, not completed validation. See [validation](docs/VALIDATION.md), [walkthrough](docs/MIDTERM_WALKTHROUGH.md), and [owner inputs](docs/OWNER_INPUTS.md).
@@ -57,16 +59,18 @@ Prioritize the working workflow over slides. No formal A/B/C study is required b
 
 These boxes track what the video explains, not completed experiments. See the speakable line in [the walkthrough](docs/MIDTERM_WALKTHROUGH.md#next-steps-to-mention-in-the-demo) and the [development tasks](PROJECT_TODO.md#next-steps-from-faculty-feedback). These follow-up tasks are not new midpoint recording prerequisites under the current product plan. Do not present improved relevance, completed legal review, or a larger implemented shortlist as established.
 
+Optional, if recording time permits: mention **Watch this research** as a potential later extension using CourtListener email alerts or webhooks for new matches/citations. A webhook version would require a reachable receiver; no monitoring capability is implemented or required for this demo. See the [monitoring next step](PROJECT_TODO.md#potential-extension-research-monitoring).
+
 ## Submission record
 
 - Official deadline/time zone: TBD
 - Video limit and format: TBD
-- Video URL/file: TBD
-- Repository URL and branch: TBD
+- Video URL/file: [Demo 1 — work in progress](https://youtu.be/doyNzaxG2VA). The product is still incomplete.
+- Repository URL and branch: [inorrr/agentic-legal-research](https://github.com/inorrr/agentic-legal-research), `main`.
 - Demonstrated commit: TBD
 - Verified setup/check commands: README installation, pytest (157 passed), frontend test:transport (3 passed), test:source (4 passed), npm run build; local PDF and live CourtListener integration records in docs/VALIDATION.md. Browser test remains blocked at launch in this environment.
 - Actual source coverage: CourtListener U.S. case search within user filters; specific Supreme Court/federal circuit choices or all available U.S. courts, including state courts. Six official Supreme Court PDFs remain an independent local demo. Neither source establishes exhaustive/current law.
-- Known missing verification/deliverables: browser workflow, additional live questions and pagination, professional review, fresh-checkout installation of the current revision, license/publication, recorded video.
+- Known missing verification/deliverables: independent browser/video review, additional live questions and pagination, professional review, fresh-checkout installation of the current revision, license selection, publication of current local changes, and confirmation that the submitted commit matches the video.
 - Submission channel/confirmation: TBD
 
 See [PROJECT_TODO.md](PROJECT_TODO.md) for the full plan.

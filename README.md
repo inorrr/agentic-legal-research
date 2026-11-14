@@ -2,6 +2,12 @@
 
 An open-source, local-first case-research workspace for lawyers: discover cases, inspect source evidence, refine searches through feedback, and save an exportable collection.
 
+## Demo 1 — work in progress
+
+[Watch Demo 1 on YouTube](https://youtu.be/doyNzaxG2VA).
+
+**The product is still incomplete and under active development.** This first demo presents the current prototype; features, reliability, and evaluation are still being improved. It is not a finished legal-research product. See the [development checklist](PROJECT_TODO.md) for remaining work.
+
 **Current status:** Working local workspace with live CourtListener case search, cached opinion text, optional bounded OpenAI research, persistent matters/rounds/feedback/selections, CSV export, and appearance settings. A real source search and model-assisted feedback round returned cases beyond the six-case PDF demo; exact source excerpts, export, and request idempotency passed checks. Court/date filters apply to the larger source. The six PDFs remain an independent local demo. This does not establish legal correctness. The browser UI builds successfully; browser execution remains unverified. See [validation](docs/VALIDATION.md).
 
 **Product scope:** U.S. case search using the available CourtListener collection and user-selected filters. **Demo/test topic:** Fourth Amendment warrantless vehicle and container searches. This topic makes the midpoint examples consistent; it does not restrict the product to six cases or to that subject.
@@ -91,7 +97,7 @@ Paste the token at the hidden prompt. The script preserves existing OpenAI setti
 
 Restart the app after configuration. Create a **new matter** with **CourtListener · broader U.S. case search**, select courts/dates, and accept the source-query disclosure. Enable the optional model and its separate disclosure for agent-assisted research. Existing local matters keep their original demo scope; they are not silently converted. Live search works without importing the six PDFs.
 
-Each round permits up to four uncached CourtListener requests. Search pages are cached for 24 hours; fetched opinion snapshots remain local for reuse. The app conservatively tracks 5 requests/minute, 50/hour, and 125/day; provider limits also apply. A stopped round displays its reason and any suggested wait. Missing opinion text is handled per case. Matter deletion does not clear the shared source cache. See [architecture](docs/ARCHITECTURE.md) for retention and source limitations.
+Each round permits up to four uncached CourtListener requests. After finding candidates, the agent prioritizes reading opinions before further searches; optional pagination reserves requests for those reads. A round can finish with fewer than three supported cases when its request allowance is used. Cached pages and opinions remain reusable. Search pages are cached for 24 hours; fetched opinion snapshots remain local for reuse. The app conservatively tracks 5 requests/minute, 50/hour, and 125/day; provider limits also apply. A stopped round displays its reason and any suggested wait. Missing opinion text is handled per case. Matter deletion does not clear the shared source cache. See [architecture](docs/ARCHITECTURE.md) for retention and source limitations.
 
 ## Documentation
 
@@ -118,4 +124,4 @@ Start the demo using the passenger-purse synthetic example. Follow [the walkthro
 
 Product scope: U.S. case discovery through CourtListener, one model provider, one local user. Demonstration questions concern vehicle/container searches; live search is not restricted to that topic. Specific court choices currently include the Supreme Court and federal circuits; **All available U.S. courts** also searches state courts. Records may include short procedural entries or separate opinions. No claim of exhaustive coverage, verified subsequent treatment, professional readiness, or algorithmic novelty. Desktop installers, local models, generated memos, collaboration, and automatic preference learning are later work.
 
-This is an individual course project. The author remains responsible for understanding the system. See [ATTRIBUTION.md](ATTRIBUTION.md) for external resources and AI assistance. An MIT license is proposed; the owner must choose the license before publishing this as licensed open-source software. This directory has not been published to a remote by this setup task.
+This is an individual course project. The author remains responsible for understanding the system. See [ATTRIBUTION.md](ATTRIBUTION.md) for external resources and AI assistance. Source is available in the [public GitHub repository](https://github.com/inorrr/agentic-legal-research). An MIT license is proposed; license selection remains pending.

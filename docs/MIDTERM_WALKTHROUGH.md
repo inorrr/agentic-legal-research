@@ -6,7 +6,7 @@ Status: rehearsal plan, not a recorded or submitted video. Official video length
 
 1. Follow README setup, then start or restart Start-Casework.command and keep its terminal open. Existing local OpenAI/CourtListener setup is complete. Use public/synthetic facts only.
 2. Use the URL opened or printed by the launcher; it selects a free port from 5173–5183. The source label should identify CourtListener for the broader demo. The six-case local collection remains a separate source option.
-3. Click **＋ New matter**, choose the CourtListener source and **Probable cause and a passenger's purse** under **Start with a synthetic example**. Keep **All available U.S. courts** and the chosen dates visible, then click **Create matter →**. Older local matters retain their original scope; create a new live matter rather than assuming they changed.
+3. Click **＋ New matter**, choose the CourtListener source and **Probable cause and a passenger's purse** under **Start with a synthetic example**. Keep **All available U.S. courts** and the chosen dates visible. Replace the example's Supreme Court-specific question with **How do courts address searches of passenger-owned containers when police have probable cause to search a vehicle?**, then click **Create matter →**. Older local matters retain their original scope; create a new live matter rather than assuming they changed.
 4. Accept the separate CourtListener query-sharing notice. For the agent rehearsal, enable **Use configured cloud model** and accept the OpenAI disclosure. These are separate data flows; model usage incurs API costs.
 5. Optionally start with search terms `"automobile exception" AND passenger`. The model may refine the query; show its actual recorded actions. Provider limits still apply: wait when the app reports a pause. Do not edit a throttled round to look like uninterrupted retrieval.
 
@@ -44,6 +44,11 @@ Keep these items explicitly labeled as future work:
 - **Independent assessment:** use reserved questions and freeze outputs before final judgments; do not feed those judgments back into the assessed search. Reused demo scenarios are development examples.
 - **Contrary-case discovery:** assess whether relevant unfavorable cases are actually found, not just permitted by the agent's instructions.
 - **Candidate shortlist:** compare up to five versus approximately twenty candidate metadata records per query without expanding full-opinion reading or source-request budgets.
+- **Potential research monitoring:** explore an opt-in **Watch this research** feature for new query matches or citations to saved cases. Begin with email alerts; consider webhook delivery if the additional hosting and reliability work is justified. This remains exploratory and is outside the midpoint scope; see the [monitoring plan](../PROJECT_TODO.md#potential-extension-research-monitoring).
+
+Optional extra closing line, if time permits (about ten seconds beyond the outline):
+
+> Another potential extension is research monitoring: notifying lawyers about new matching cases or citations to their saved cases through CourtListener alerts.
 
 The detailed tasks are in [PROJECT_TODO.md](../PROJECT_TODO.md#next-steps-from-faculty-feedback). These follow-up tasks do not add new midpoint recording prerequisites under the current product plan. Browser rehearsal and repository/video delivery remain open.
 

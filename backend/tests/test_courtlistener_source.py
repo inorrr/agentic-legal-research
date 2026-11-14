@@ -159,6 +159,112 @@ def test_unseen_results_then_pagination_and_exhausted_seen_fallback(tmp_path):
         adapter.close()
 
 
+@pytest.mark.parametrize(('budget', 'candidate_count'), [(4, 3), (2, 1)])
+def test_optional_pagination_reserves_requests_for_opinion_reads(tmp_path, budget, candidate_count):
+    paths = []
+
+    def handler(request):
+        paths.append(request.url.path)
+        if request.url.path.endswith('/search/'):
+            assert 'cursor' not in request.url.params
+            return httpx.Response(200, json=page(
+                [case(number) for number in range(1, candidate_count + 1)],
+                str(request.url.copy_add_param('cursor', 'page2'))))
+        number = int(request.url.path.rstrip('/').rsplit('/', 1)[1]) - 1000
+        return httpx.Response(200, json=opinion(number))
+
+    adapter = source(tmp_path, handler, request_budget=budget)
+    try:
+        found = search(adapter)
+        assert len(found) == candidate_count
+        assert adapter.metrics['api_requests'] == 1
+        assert adapter.last_search['has_more'] is True
+        assert adapter.last_search['pages_examined'] == 1
+        assert adapter.last_search['pagination_paused'] == 'opinion_read_reserve'
+        assert 'stopped_reason' not in adapter.last_search
+        assert 'error_category' not in adapter.last_search
+        for candidate in found:
+            record = adapter.get_case(candidate['id'])
+            assert record['sections']
+            assert record['canonical_text']
+        assert adapter.metrics['api_requests'] == budget
+        assert len(paths) == budget
+        with pytest.raises(SourceError) as exhausted:
+            search(adapter, query='another query')
+        assert exhausted.value.category == 'source_budget'
+        assert len(paths) == budget
+    finally:
+        adapter.close()
+
+
+def test_cached_pagination_and_opinion_reads_work_after_round_budget_is_spent(tmp_path):
+    def prime(request):
+        if request.url.path.endswith('/opinions/1001/'):
+            return httpx.Response(200, json=opinion())
+        if request.url.params.get('cursor') == 'page2':
+            return httpx.Response(200, json=page([case(4), case(5)]))
+        return httpx.Response(200, json=page([case(1), case(2), case(3)],
+            str(request.url.copy_add_param('cursor', 'page2'))))
+
+    first = source(tmp_path, prime)
+    try:
+        search(first, limit=3)
+        search(first, limit=2, excluded_ids={'cl-101', 'cl-102', 'cl-103'})
+        expected = first.get_case('cl-101')
+        assert first.metrics['api_requests'] == 3
+    finally:
+        first.close()
+
+    requests = []
+
+    def consume(request):
+        requests.append(request)
+        assert request.url.params['q'] == 'consume round request'
+        return httpx.Response(200, json=page([]))
+
+    second = source(tmp_path, consume, request_budget=1)
+    try:
+        search(second, query='consume round request')
+        assert len(search(second)) == 5
+        assert second.last_search['pages_examined'] == 2
+        assert 'pagination_paused' not in second.last_search
+        assert second.get_case('cl-101')['sections'] == expected['sections']
+        assert second.metrics['api_requests'] == 1
+        assert len(requests) == 1
+    finally:
+        second.close()
+
+
+def test_opinion_reserve_does_not_hide_a_provider_limit_when_more_discovery_is_allowed(tmp_path):
+    first = source(tmp_path, lambda request: httpx.Response(200, json=page([])))
+    try:
+        for number in range(4):
+            search(first, query=f'prior query {number}')
+    finally:
+        first.close()
+
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        return httpx.Response(200, json=page([case()],
+            str(request.url.copy_add_param('cursor', 'page2'))))
+
+    second = source(tmp_path, handler)
+    try:
+        assert len(search(second)) == 1
+        assert len(requests) == 1
+        assert second.last_search['error_category'] == 'rate_limited'
+        assert second.last_search['retry_after'] == 60
+        assert 'pagination_paused' not in second.last_search
+        with pytest.raises(SourceError) as limited:
+            second.get_case('cl-101')
+        assert limited.value.category == 'rate_limited'
+        assert len(requests) == 1
+    finally:
+        second.close()
+
+
 @pytest.mark.parametrize('bad_case', [case(court='ca9'), case(filed='2025-01-01')])
 def test_scope_mismatch_is_rejected(tmp_path, bad_case):
     adapter = source(tmp_path, lambda request: httpx.Response(200, json=page([bad_case])))

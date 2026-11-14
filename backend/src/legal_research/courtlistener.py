@@ -293,7 +293,7 @@ class CourtListenerSource:
             raise _error('invalid_response', 'CourtListener returned an invalid response structure.')
         return payload
 
-    def _search_page(self, url, parameters, court, start, end):
+    def _search_page(self, url, parameters, court, start, end, *, allow_fetch=True):
         with self._db() as db:
             row = db.execute('SELECT fetched,body FROM source_search_pages WHERE url=?', (url,)).fetchone()
         if row and self._clock()-row[0] < SEARCH_CACHE_SECONDS:
@@ -301,6 +301,8 @@ class CourtListenerSource:
             page = json.loads(row[1])
             _next_url(page.get('next'), parameters)
             return page
+        if not allow_fetch:
+            return None
         raw = self._fetch(url, SEARCH_PATH)
         results = raw.get('results')
         if not isinstance(results, list) or len(results) > 100:
@@ -352,18 +354,26 @@ class CourtListenerSource:
         url = BASE + SEARCH_PATH + '?' + urlencode(parameters)
         excluded = set(excluded_ids or [])
         found, visited = {}, set()
+        usable_new = 0
         self.last_search = {'count': None, 'has_more': False, 'pages_examined': 0}
         while url and len(visited) < 25:
             if url in visited:
                 raise _error('invalid_response', 'CourtListener repeated a pagination cursor.')
-            visited.add(url)
+            # Reserve capacity to read up to three discovered opinions. Cached
+            # pages remain free to traverse, including at zero requests left.
+            read_reserve = min(3, usable_new, max(1, self.request_budget - 1))
+            allow_fetch = not usable_new or self.request_budget - self.metrics['api_requests'] > read_reserve
             try:
-                page = self._search_page(url, parameters, court, start, end)
+                page = self._search_page(url, parameters, court, start, end, allow_fetch=allow_fetch)
             except SourceError as error:
                 if not found or error.category not in {'source_budget', 'rate_limited'}:
                     raise
                 self.last_search.update(has_more=True, stopped_reason=error.message, error_category=error.category, retry_after=error.retry_after)
                 break
+            if page is None:
+                self.last_search.update(has_more=True, pagination_paused='opinion_read_reserve')
+                break
+            visited.add(url)
             self.last_search.update(count=page['count'], pages_examined=len(visited))
             for case in page['cases']:
                 # Cached search pages are keyed by the entire immutable query/filter URL.

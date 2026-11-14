@@ -58,6 +58,9 @@ the research question. Read text is normalized from source HTML or plain text, a
 evidence refers to exact slices of that stored snapshot. Do not claim byte-for-byte
 PDF transcription. The source has a small per-round request budget and provider
 rate limits; cached reads are reusable. Read at most three useful cases, then finalize.
+After discovery returns candidates, read a promising case before refining the search.
+When requests are reserved for opinion reads, choose among the available candidates
+instead of issuing more metadata searches. Fewer supported cases are acceptable.
 """
 
 
@@ -354,6 +357,23 @@ def run_research(corpus, matter, feedback, seen_ids, model, api_key, *,
             body['error'] = error
         return body
 
+    def source_policy():
+        read_ids = {item['case_id'] for item in delivered_evidence.values()}
+        unread = [case for key, case in candidates.items()
+                  if key not in read_ids and case.get('text_status') != 'unavailable']
+        request_budget = getattr(corpus, 'request_budget', None) if live else None
+        requests_used = getattr(corpus, 'metrics', {}).get('api_requests') if live else None
+        remaining = (max(0, request_budget-requests_used)
+                     if type(request_budget) is int and type(requests_used) is int else None)
+        # Spend the bounded source allowance on evidence, not repeated metadata.
+        # Cached unread opinions remain available after the HTTP allowance ends.
+        finish = (source_diagnostic is not None or len(read_ids) >= 3 or
+                  (bool(read_ids) and remaining == 0 and
+                   not any(case.get('text_availability') == 'cached' for case in unread)))
+        read_first = (live and bool(unread) and
+                      (not read_ids or (remaining is not None and remaining <= max(1, 3-len(read_ids)))))
+        return finish, read_first, remaining, unread
+
     try:
         if owned_client:
             try:
@@ -372,16 +392,21 @@ def run_research(corpus, matter, feedback, seen_ids, model, api_key, *,
             if counts['input_tokens']+counts['output_tokens'] >= limits.observed_token_stop:
                 return result('partial', 'Observed token budget reached; no further model call made.')
             counts['model_calls'] += 1
-            finish_now = (source_diagnostic is not None or index == limits.model_calls-1 or
-                          len({item['case_id'] for item in delivered_evidence.values()}) >= 3)
+            finish_now, read_before_search, remaining_requests, _ = source_policy()
+            finish_now = finish_now or index == limits.model_calls-1
             instructions = SYSTEM + (LIVE_INSTRUCTIONS if live else '')
             if live and task.get('search_query'):
                 instructions += '\nUse the explicit search_query as your starting search query; retain court/date constraints and refine later only using evidence and feedback.'
             instructions += ('\nFinalize now using only the evidence already delivered. Tools are disabled for this response.' if finish_now else '')
+            if not finish_now and read_before_search:
+                instructions += '\nRead one of the unread available candidates now; source requests are reserved for evidence before further discovery.'
+            if remaining_requests is not None:
+                instructions += f'\nRemaining uncached source requests this round: {remaining_requests}. Cached reads cost no source request.'
             try:
                 response = _client.responses.create(
                     model=model, instructions=instructions, input=messages, tools=LIVE_TOOLS if live else TOOLS,
-                    tool_choice='none' if finish_now else 'auto',
+                    tool_choice=('none' if finish_now else {'type':'function', 'name':'read_case'}
+                                 if read_before_search else 'auto'),
                     parallel_tool_calls=False, store=False, include=['reasoning.encrypted_content'],
                     max_output_tokens=limits.output_tokens_per_call,
                     text={'format': {'type': 'json_schema', 'name': 'case_research_results',
@@ -409,9 +434,18 @@ def run_research(corpus, matter, feedback, seen_ids, model, api_key, *,
                     name = _field(call, 'name')
                     if _clock()-start >= limits.seconds:
                         return result('partial', 'Round time budget exhausted before a source operation.')
-                    if source_diagnostic is not None:
-                        # Even a model ignoring tool_choice cannot make another source request.
-                        tool_result = {'error': 'Source retrieval stopped. Finalize using only delivered evidence.'}
+                    # A response may ignore parallel_tool_calls=False. Re-evaluate
+                    # after each operation so a second call cannot bypass a stop.
+                    stop_retrieval, prioritize_read, _, unread = source_policy()
+                    stop_retrieval = stop_retrieval or finish_now
+                    if stop_retrieval or (name == 'search_cases' and prioritize_read):
+                        # Enforce the policy even if a response ignores tool_choice.
+                        detail = ('The round is ready to finish. Finalize using only delivered evidence.' if stop_retrieval else
+                                  'Search deferred to preserve opinion-reading capacity. Read an available candidate before another search.')
+                        tool_result = {'error': detail}
+                        if not stop_retrieval:
+                            tool_result['available_case_ids'] = [case['id'] for case in unread]
+                        actions.append({'tool':'budget_guard','detail':detail})
                         messages.append({'type':'function_call_output','call_id':_field(call,'call_id'),
                                          'output':json.dumps(tool_result)})
                         continue
@@ -433,7 +467,9 @@ def run_research(corpus, matter, feedback, seen_ids, model, api_key, *,
                             if live:
                                 search_status = getattr(corpus, 'last_search', {})
                                 tool_result['discovery'] = {key: value for key, value in search_status.items()
-                                                            if key in {'total', 'count', 'has_more', 'exhausted', 'returned_count', 'pages_examined'}}
+                                                            if key in {'total', 'count', 'has_more', 'exhausted', 'returned_count', 'pages_examined', 'pagination_paused'}}
+                                if search_status.get('pagination_paused') == 'opinion_read_reserve':
+                                    actions.append({'tool':'source_pagination','detail':'Paused additional search pages to reserve source requests for reading opinions; more matches may remain.'})
                                 if search_status.get('error_category') or search_status.get('stopped_reason'):
                                     pagination_diagnostic, pagination_stop_reason = _source_failure(SimpleNamespace(
                                         category=search_status.get('error_category') or 'pagination_limit',
@@ -467,6 +503,7 @@ def run_research(corpus, matter, feedback, seen_ids, model, api_key, *,
                                 short = total_characters < 500
                                 candidates[args.case_id].update({key: case[key] for key in ('opinion_id','opinion_scope','text_sha256','text_status') if key in case})
                                 candidates[args.case_id]['short_record'] = short
+                                candidates[args.case_id]['text_availability'] = 'cached'
                                 tool_result = {'case_id':args.case_id,'sections':sections,'evidence':evidence,
                                                'available_section_numbers':[section['section_number'] for section in case.get('sections', [])][:200],
                                                'total_sections':len(case.get('sections', [])), 'full_text_characters':total_characters,

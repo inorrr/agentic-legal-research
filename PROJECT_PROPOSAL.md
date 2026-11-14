@@ -73,6 +73,8 @@ Data availability, unreliable evidence generation, installation friction, and ex
 
 Deferred: sophisticated clarification, automatic behavioral memory, local model support, desktop installers, advanced filters and authority classification, citation graphs, generated memos, rich annotation, collaboration, and non-U.S. sources.
 
+**Potential extension — research monitoring:** explore an opt-in **Watch this research** feature for newly indexed matches and citations to saved cases. CourtListener email alerts could be the first version; in-app webhook delivery would require a separate reachable HTTPS receiver, reliable handling while the local app is offline, and confirmation of provider limits/costs. Any agent analysis remains optional and bounded. Monitoring dates must be explicitly chosen, and citation alerts do not establish legal treatment. This is future work outside the midpoint scope. See the [monitoring next step](PROJECT_TODO.md#potential-extension-research-monitoring).
+
 ## Faculty feedback and attribution
 
 [Abel](feedback_abel.md) encouraged understanding existing tools, choosing a topic, and seeking meaningful relevance review. [John](feedback_John.md) flagged scope and access risks. Preserve their emphasis on evidence, contrary cases, and separate saving/voting while replacing the large comparative experiment with product validation.

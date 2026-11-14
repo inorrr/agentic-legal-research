@@ -98,6 +98,16 @@ These are planned follow-up tasks to mention in the midpoint demo. They do not r
 - [ ] Assess actual discovery of relevant contrary cases with the reviewer. Identify a small set of relevant favorable and unfavorable examples, inspect retrieved and missed cases, and report limits. Eligibility safeguards and a small reviewed sample do not establish comprehensive legal recall.
 - [ ] Test a larger candidate shortlist: compare the current limit of five metadata records per model search call with approximately twenty, using the same reserved questions and filters for both settings and the independent assessment above. Keep opinion-reading and source-request budgets bounded; assess relevance (including contrary cases), new relevant discoveries, human effort, latency, and model usage/cost where available. Document review results before choosing a new default. This remains future work, not a demonstrated improvement.
 
+## Potential extension: research monitoring
+
+- [ ] Explore an opt-in **Watch this research** feature after the core workflow and reviewer evaluation: notify lawyers when CourtListener indexes new results for a saved query or new material cites a saved case. This is a potential extension, not a midpoint requirement or implemented capability.
+
+Start with CourtListener's native email alerts as a lower-infrastructure option. If in-app notifications prove useful, assess a separate reachable HTTPS webhook receiver and queue, endpoint protection, duplicate-event handling, and delivery when the local app reconnects. Keep the existing loopback app private. Users should be able to pause or delete watches; incoming results should link to the originating matter for review without automatically changing its filters or saved-case collection. Optional agent analysis should require consent and retain per-run usage budgets; receiving an alert alone should not trigger paid model calls.
+
+Confirm provider access, alert limits, and any service/hosting costs before implementation. Monitoring needs an explicitly approved ongoing date window; never silently extend a matter's fixed cutoff. Search alerts use keyword queries. Citation notifications are leads for review, not verification of negative treatment or current law. Webhooks do not replace interactive search or guarantee that cached opinion snapshots are refreshed.
+
+Provider references, consulted 2026-11-14: [Alert APIs](https://wiki.free.law/c/courtlistener/help/api/rest/v4/alerts), [webhook setup](https://wiki.free.law/c/courtlistener/help/api/webhooks/getting-started), and [webhook events and terms](https://wiki.free.law/c/courtlistener/help/api/webhooks/about).
+
 ## Later, only after the core works
 
 Automatic memory suggestions; selective clarification; local models; desktop installers; configurable export folders; memos; advanced comparison; citation graphs; collaboration.
