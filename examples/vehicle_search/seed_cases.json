@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "collection": {
+    "id": "scotus_vehicle_search_1980_2020",
+    "topic": "Fourth Amendment warrantless vehicle and container searches",
+    "court": "scotus",
+    "decision_date_from": "1980-01-01",
+    "decision_date_to": "2020-12-31",
+    "coverage_status": "historical_demo_not_complete_current_law",
+    "seed_count": 6,
+    "scope_note": "Six seed cases for source and retrieval checks; not an exhaustive collection of decisions within the court and date limits.",
+    "verification_method": "public_web_pdf_inspection",
+    "verification_date": "2026-11-13",
+    "backend_live_access_verified": false,
+    "legal_review_status": "engineering_only_review_pending",
+    "provenance": "Public case metadata and original summaries; no copied opinion text or headnotes."
+  },
+  "cases": [
+    {
+      "id": "us_scotus_1982_ross",
+      "case_name": "United States v. Ross",
+      "citation": "456 U.S. 798 (1982)",
+      "decision_date": "1982-06-01",
+      "docket_number": "80-2209",
+      "court": "scotus",
+      "courtlistener_cluster_id": null,
+      "courtlistener_opinion_id": null,
+      "courtlistener_url": null,
+      "courtlistener_status": "unverified",
+      "official_pdf_url": "https://tile.loc.gov/storage-services/service/ll/usrep/usrep456/usrep456798/usrep456798.pdf",
+      "official_pdf_page_count": 46,
+      "majority_pinpoints": [
+        {"reporter_page_start": 824, "reporter_page_end": 825, "pdf_page_start": 27, "pdf_page_end": 28}
+      ],
+      "pdf_page_numbering": "one_based",
+      "summary": "Addresses the scope of a probable-cause vehicle search, including containers capable of holding the object sought.",
+      "comparison_topics": ["probable_cause", "scope_of_search", "containers"],
+      "verification_method": "public_web_pdf_inspection"
+    },
+    {
+      "id": "us_scotus_1991_acevedo",
+      "case_name": "California v. Acevedo",
+      "citation": "500 U.S. 565 (1991)",
+      "decision_date": "1991-05-30",
+      "docket_number": "89-1690",
+      "court": "scotus",
+      "courtlistener_cluster_id": null,
+      "courtlistener_opinion_id": null,
+      "courtlistener_url": null,
+      "courtlistener_status": "unverified",
+      "official_pdf_url": "https://www.govinfo.gov/content/pkg/USREPORTS-500/pdf/USREPORTS-500-565.pdf",
+      "official_pdf_page_count": 38,
+      "majority_pinpoints": [
+        {"reporter_page_start": 579, "reporter_page_end": 580, "pdf_page_start": 15, "pdf_page_end": 16}
+      ],
+      "pdf_page_numbering": "one_based",
+      "summary": "Distinguishes probable cause focused on a container in a car from grounds for searching the entire vehicle.",
+      "comparison_topics": ["probable_cause", "scope_of_search", "container_specific_suspicion"],
+      "verification_method": "public_web_pdf_inspection"
+    },
+    {
+      "id": "us_scotus_1998_knowles",
+      "case_name": "Knowles v. Iowa",
+      "citation": "525 U.S. 113 (1998)",
+      "decision_date": "1998-12-08",
+      "docket_number": "97-7597",
+      "court": "scotus",
+      "courtlistener_cluster_id": null,
+      "courtlistener_opinion_id": null,
+      "courtlistener_url": null,
+      "courtlistener_status": "unverified",
+      "official_pdf_url": "https://www.govinfo.gov/content/pkg/USREPORTS-525/pdf/USREPORTS-525-113.pdf",
+      "official_pdf_page_count": 7,
+      "majority_pinpoints": [
+        {"reporter_page_start": 114, "reporter_page_end": 119, "pdf_page_start": 2, "pdf_page_end": 7}
+      ],
+      "pdf_page_numbering": "one_based",
+      "summary": "Rejects the traffic citation itself as justification for the full vehicle search in the case.",
+      "comparison_topics": ["traffic_citation", "custodial_arrest", "search_incident_to_arrest"],
+      "verification_method": "public_web_pdf_inspection"
+    },
+    {
+      "id": "us_scotus_1999_houghton",
+      "case_name": "Wyoming v. Houghton",
+      "citation": "526 U.S. 295 (1999)",
+      "decision_date": "1999-04-05",
+      "docket_number": "98-184",
+      "court": "scotus",
+      "courtlistener_cluster_id": null,
+      "courtlistener_opinion_id": null,
+      "courtlistener_url": null,
+      "courtlistener_status": "unverified",
+      "official_pdf_url": "https://www.govinfo.gov/content/pkg/USREPORTS-526/pdf/USREPORTS-526-295.pdf",
+      "official_pdf_page_count": 19,
+      "majority_pinpoints": [
+        {"reporter_page_start": 307, "reporter_page_end": 307, "pdf_page_start": 13, "pdf_page_end": 13}
+      ],
+      "pdf_page_numbering": "one_based",
+      "summary": "Addresses a passenger's belongings found in a car when officers have probable cause to search the car for an object those belongings could conceal.",
+      "comparison_topics": ["probable_cause", "passenger_belongings", "containers"],
+      "verification_method": "public_web_pdf_inspection"
+    },
+    {
+      "id": "us_scotus_2009_gant",
+      "case_name": "Arizona v. Gant",
+      "citation": "556 U.S. 332 (2009)",
+      "decision_date": "2009-04-21",
+      "docket_number": "07-542",
+      "court": "scotus",
+      "courtlistener_cluster_id": 145887,
+      "courtlistener_opinion_id": null,
+      "courtlistener_url": "https://www.courtlistener.com/opinion/145887/arizona-v-gant/",
+      "courtlistener_status": "index_link_only_api_unverified",
+      "courtlistener_index_url": "https://www.courtlistener.com/c/us/556/",
+      "official_pdf_url": "https://www.govinfo.gov/content/pkg/USREPORTS-556/pdf/USREPORTS-556-332.pdf",
+      "official_pdf_page_count": 34,
+      "majority_pinpoints": [
+        {"reporter_page_start": 343, "reporter_page_end": 344, "pdf_page_start": 12, "pdf_page_end": 13},
+        {"reporter_page_start": 351, "reporter_page_end": 351, "pdf_page_start": 20, "pdf_page_end": 20}
+      ],
+      "pdf_page_numbering": "one_based",
+      "summary": "Limits vehicle searches incident to arrest by reference to access and evidence of the arrest offense, while distinguishing other warrant exceptions.",
+      "comparison_topics": ["search_incident_to_arrest", "secured_arrestee", "evidence_of_arrest_offense"],
+      "verification_method": "public_web_pdf_inspection"
+    },
+    {
+      "id": "us_scotus_2018_collins",
+      "case_name": "Collins v. Virginia",
+      "citation": "584 U.S. 586 (2018)",
+      "decision_date": "2018-05-29",
+      "docket_number": "16-1027",
+      "court": "scotus",
+      "courtlistener_cluster_id": null,
+      "courtlistener_opinion_id": null,
+      "courtlistener_url": null,
+      "courtlistener_status": "unverified",
+      "official_pdf_url": "https://www.govinfo.gov/content/pkg/USREPORTS-584/pdf/USREPORTS-584-586.pdf",
+      "official_pdf_page_count": 31,
+      "majority_pinpoints": [
+        {"reporter_page_start": 594, "reporter_page_end": 596, "pdf_page_start": 9, "pdf_page_end": 11},
+        {"reporter_page_start": 601, "reporter_page_end": 601, "pdf_page_start": 16, "pdf_page_end": 16}
+      ],
+      "pdf_page_numbering": "one_based",
+      "summary": "Limits reliance on the automobile exception to enter a home's curtilage to reach a vehicle; other possible grounds were left for remand.",
+      "comparison_topics": ["automobile_exception", "curtilage", "lawful_access"],
+      "verification_method": "public_web_pdf_inspection"
+    }
+  ]
+}

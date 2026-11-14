@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "collection": {
+    "id": "scotus_vehicle_search_1980_2020",
+    "topic": "Fourth Amendment warrantless vehicle and container searches",
+    "court": "scotus",
+    "decision_date_from": "1980-01-01",
+    "decision_date_to": "2020-12-31",
+    "coverage_status": "historical_demo_not_complete_current_law"
+  },
+  "provenance": "Original synthetic fact patterns for engineering checks; no private matters or copied headnotes.",
+  "expected_matches_status": "engineering_only_review_pending",
+  "evaluation_note": "Expected matches are retrieval candidates, not exhaustive relevance judgments or validated legal answers. Preserve relevant contrary cases and identify material factual distinctions.",
+  "scenarios": [
+    {
+      "id": "secured_driver_backpack",
+      "title": "Arrested driver and a backpack in the car",
+      "synthetic": true,
+      "fact_pattern": "A driver is arrested for driving with a suspended license and locked in a patrol car. Officers then search a backpack on the backseat of the driver's car. Assume the driver did not consent and officers have no separately established probable cause to search for contraband.",
+      "research_question": "Find Supreme Court decisions addressing whether the arrest justifies this vehicle search, and compare decisions involving independent grounds to search a vehicle.",
+      "initial_query": "vehicle search incident to arrest secured driver suspended license",
+      "optional_feedback": "Focus on whether the driver could reach the car and whether the arrest offense would produce physical evidence in it.",
+      "expected_primary_case_ids": ["us_scotus_2009_gant", "us_scotus_1998_knowles"],
+      "expected_comparison_case_ids": ["us_scotus_1982_ross"],
+      "comparison_checks": [
+        "Distinguish a custodial arrest from issuance of a traffic citation.",
+        "Discuss access to the passenger compartment and evidence of the arrest offense separately.",
+        "Explain why probable-cause vehicle cases may still be relevant comparisons without assuming probable cause exists in these facts."
+      ]
+    },
+    {
+      "id": "passenger_purse",
+      "title": "Probable cause and a passenger's purse",
+      "synthetic": true,
+      "fact_pattern": "Officers have corroborated information that drugs are being sold from a car and lawfully stop it on a public road. Assume they have probable cause to search the car for those drugs. They open a passenger's purse found in the car that could hold the drugs, although the passenger is not separately suspected of wrongdoing. No warrant or consent is present.",
+      "research_question": "Find Supreme Court decisions comparing the scope of probable cause, ownership of a container, and searches of containers inside vehicles.",
+      "initial_query": "automobile probable cause passenger belongings container search",
+      "optional_feedback": "Keep cases where suspicion concerns one specific container separate from cases where probable cause concerns the car generally.",
+      "expected_primary_case_ids": ["us_scotus_1999_houghton", "us_scotus_1982_ross"],
+      "expected_comparison_case_ids": ["us_scotus_1991_acevedo"],
+      "comparison_checks": [
+        "Distinguish searching belongings found in a vehicle from searching a passenger's body.",
+        "Connect the object sought with the places capable of concealing it.",
+        "Explain the difference between probable cause concerning a vehicle generally and probable cause limited to a particular bag."
+      ]
+    },
+    {
+      "id": "covered_motorcycle_driveway",
+      "title": "Covered motorcycle beside a home",
+      "synthetic": true,
+      "fact_pattern": "An officer has probable cause to believe a motorcycle is stolen. It is covered by a tarp at the partly enclosed top of a driveway adjoining the suspect's home. Without a warrant, the officer enters that area and lifts the tarp to inspect identifying information. Assume the suspect lives at the home and there is no consent, hot pursuit, or emergency.",
+      "research_question": "Find Supreme Court decisions addressing whether automobile-search authority supplies a right to enter the area beside the home, and distinguish searches of vehicles on public roads.",
+      "initial_query": "automobile exception motorcycle driveway curtilage warrantless entry",
+      "optional_feedback": "Prioritize the vehicle's location and the officer's lawful access, not vehicle mobility alone.",
+      "expected_primary_case_ids": ["us_scotus_2018_collins"],
+      "expected_comparison_case_ids": ["us_scotus_1982_ross", "us_scotus_1999_houghton"],
+      "comparison_checks": [
+        "Identify which facts may matter to whether the driveway area is curtilage instead of assuming every driveway is identical.",
+        "Separate probable cause to search a vehicle from lawful access to the place containing it.",
+        "Preserve the limitation that Collins left other possible grounds for the search to be considered on remand."
+      ]
+    }
+  ]
+}
